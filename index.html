@@ -3,322 +3,331 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyxor | Film & Movie Edits</title>
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;600;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
-    
+    <title>2D RPG - Village Encounter</title>
     <style>
         :root {
-            --bg-color: #0b0c10;
-            --card-bg: rgba(255, 255, 255, 0.03);
-            --border-color: rgba(255, 255, 255, 0.08);
-            --accent-pink: #ff0050;
-            --accent-cyan: #00f2fe;
-            --text-main: #ffffff;
-            --text-muted: #a0a5b5;
+            --bg-color: #0f1015;
+            --accent-color: #ff0050;
+            --dialog-bg: rgba(15, 16, 21, 0.92);
+            --border-color: rgba(255, 255, 255, 0.15);
+            --text-color: #f0f0f5;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
         body {
             background-color: var(--bg-color);
-            color: var(--text-main);
-            min-height: 100vh;
+            color: var(--text-color);
             display: flex;
             flex-direction: column;
             align-items: center;
-            overflow-x: hidden;
+            justify-content: center;
+            min-height: 100vh;
+            overflow: hidden;
         }
 
-        /* Ambient glow background effect */
-        .glow {
+        .game-wrapper {
+            position: relative;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        canvas {
+            display: block;
+            background-color: #2d5a27;
+        }
+
+        /* Dialogue Overlay Box */
+        .dialogue-box {
             position: absolute;
-            width: 500px;
-            height: 500px;
-            background: radial-gradient(circle, rgba(255, 0, 80, 0.18) 0%, rgba(0, 0, 0, 0) 70%);
-            top: -150px;
+            bottom: 16px;
             left: 50%;
             transform: translateX(-50%);
-            z-index: -1;
-            pointer-events: none;
-        }
-
-        .container {
-            width: 100%;
-            max-width: 900px;
-            padding: 40px 20px;
-        }
-
-        /* Profile Card */
-        .profile-card {
-            background: var(--card-bg);
+            width: 90%;
+            background: var(--dialog-bg);
             border: 1px solid var(--border-color);
-            backdrop-filter: blur(16px);
-            border-radius: 28px;
-            padding: 40px 20px;
-            text-align: center;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6);
-            margin-bottom: 40px;
-        }
-
-        .avatar-container {
-            position: relative;
-            width: 130px;
-            height: 130px;
-            margin: 0 auto 20px;
-        }
-
-        .avatar-container img {
-            width: 100%;
-            height: 100%;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
-        }
-
-        .handle-tag {
-            display: inline-block;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 6px 16px;
-            border-radius: 100px;
-            font-size: 0.85rem;
-            color: var(--text-muted);
-            margin-bottom: 12px;
-            border: 1px solid var(--border-color);
-            letter-spacing: 0.5px;
-        }
-
-        h1 {
-            font-family: 'Syne', sans-serif;
-            font-size: 2.8rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            margin-bottom: 6px;
-        }
-
-        .bio {
-            color: var(--accent-pink);
-            font-weight: 600;
-            font-size: 1.05rem;
-            margin-bottom: 24px;
-        }
-
-        .goal-badge {
-            display: inline-block;
-            background: rgba(255, 0, 80, 0.1);
-            color: var(--accent-pink);
-            border: 1px solid rgba(255, 0, 80, 0.2);
-            padding: 4px 12px;
+            backdrop-filter: blur(10px);
             border-radius: 8px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            margin-bottom: 24px;
+            padding: 16px;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
         }
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 12px;
-            max-width: 480px;
-            margin: 0 auto 30px;
+        .dialogue-box.active {
+            display: flex;
         }
 
-        .stat-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--border-color);
-            padding: 14px 8px;
-            border-radius: 16px;
-        }
-
-        .stat-value {
-            font-size: 1.4rem;
-            font-weight: 800;
-        }
-
-        .stat-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
+        .speaker-name {
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--accent-color);
             text-transform: uppercase;
             letter-spacing: 1px;
-            margin-top: 2px;
         }
 
-        /* Call to Action Button */
-        .cta-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: linear-gradient(45deg, var(--accent-pink), #ff5e00);
-            color: #fff;
-            padding: 16px 36px;
-            border-radius: 100px;
-            font-weight: 700;
+        .dialogue-text {
             font-size: 1rem;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            box-shadow: 0 10px 25px rgba(255, 0, 80, 0.35);
+            line-height: 1.4;
+            color: var(--text-color);
         }
 
-        .cta-btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(255, 0, 80, 0.55);
+        .dialogue-prompt {
+            align-self: flex-end;
+            font-size: 0.75rem;
+            color: #888;
+            margin-top: 4px;
         }
 
-        /* Gallery Title */
-        .section-title {
-            font-family: 'Syne', sans-serif;
-            font-size: 1.4rem;
-            margin-bottom: 20px;
-            letter-spacing: -0.5px;
-        }
-
-        /* Edit Showcase Cards */
-        .showcase-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: 20px;
-            margin-bottom: 50px;
-        }
-
-        .video-card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            overflow: hidden;
-            position: relative;
-            aspect-ratio: 9/16;
-            transition: transform 0.3s ease, border-color 0.3s ease;
-            display: flex;
-            align-items: flex-end;
-            padding: 16px;
-            text-decoration: none;
-            color: white;
-        }
-
-        .video-card:hover {
-            transform: translateY(-6px);
-            border-color: rgba(255, 255, 255, 0.3);
-        }
-
-        .video-overlay {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(0,0,0,0.85) 100%);
-            z-index: 1;
-        }
-
-        .card-info {
-            position: relative;
-            z-index: 2;
-        }
-
-        .card-tag {
-            font-size: 0.7rem;
-            background: rgba(255, 255, 255, 0.2);
-            padding: 3px 8px;
-            border-radius: 6px;
-            backdrop-filter: blur(6px);
-            text-transform: uppercase;
-            font-weight: 600;
-        }
-
-        .card-title {
-            font-weight: 700;
-            font-size: 1.05rem;
-            margin-top: 6px;
-        }
-
-        footer {
-            text-align: center;
-            color: var(--text-muted);
+        .controls-hint {
+            margin-top: 16px;
             font-size: 0.85rem;
-            padding: 24px 0;
-            border-top: 1px solid var(--border-color);
-            width: 100%;
+            color: #7a7e8d;
+        }
+
+        kbd {
+            background: #222531;
+            border: 1px solid var(--border-color);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #fff;
+            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
 
-    <div class="glow"></div>
-
-    <div class="container">
-        <!-- Profile Header -->
-        <header class="profile-card">
-            <div class="avatar-container">
-                <!-- Local Image File -->
-                <img src="Screenshot 2026-08-18 200231.png" alt="Nyxor Profile Avatar">
-            </div>
-            <span class="handle-tag">@nyxor107</span>
-            <h1>Nyxor</h1>
-            <p class="bio">📌 Film & Movie Edits</p>
-            <div class="goal-badge">Goal: 100 followers</div>
-
-            <!-- Profile Stats -->
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value">6</div>
-                    <div class="stat-label">Following</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">32</div>
-                    <div class="stat-label">Followers</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">10.9K</div>
-                    <div class="stat-label">Likes</div>
-                </div>
-            </div>
-
-            <a href="https://www.tiktok.com/@nyxor107" target="_blank" rel="noopener noreferrer" class="cta-btn">
-                <span>Watch on TikTok</span>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-5.2 1.74 2.89 2.89 0 0 1 2.31-4.64 2.93 2.93 0 0 1 .88.13V9.4a6.84 6.84 0 0 0-1-.05A6.33 6.33 0 0 0 3 15.68 6.34 6.34 0 0 0 9.33 22 6.33 6.33 0 0 0 15.67 15.68V9.08a8.16 8.16 0 0 0 4.77 1.52v-3.4a4.85 4.85 0 0 1-.85-.51z"/></svg>
-            </a>
-        </header>
-
-        <!-- Movie Edits Gallery -->
-        <main>
-            <h2 class="section-title">🎬 Latest Movie Edits</h2>
-            <div class="showcase-grid">
-                <a href="https://www.tiktok.com/@nyxor107" target="_blank" class="video-card" style="background-image: url('https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
-                    <div class="video-overlay"></div>
-                    <div class="card-info">
-                        <span class="card-tag">Batman / Joker</span>
-                        <div class="card-title">The Dark Knight Edit</div>
-                    </div>
-                </a>
-
-                <a href="https://www.tiktok.com/@nyxor107" target="_blank" class="video-card" style="background-image: url('https://images.unsplash.com/photo-1485846234645-a62644f84728?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
-                    <div class="video-overlay"></div>
-                    <div class="card-info">
-                        <span class="card-tag">Drama</span>
-                        <div class="card-title">Good Will Hunting Edit</div>
-                    </div>
-                </a>
-
-                <a href="https://www.tiktok.com/@nyxor107" target="_blank" class="video-card" style="background-image: url('https://images.unsplash.com/photo-1517604931442-7e0c8ed2963c?q=80&w=600&auto=format&fit=crop'); background-size: cover; background-position: center;">
-                    <div class="video-overlay"></div>
-                    <div class="card-info">
-                        <span class="card-tag">Sci-Fi</span>
-                        <div class="card-title">Inception Scene Edit</div>
-                    </div>
-                </a>
-            </div>
-        </main>
-
-        <footer>
-            <p>© 2026 Nyxor (@nyxor107). Built for Film & Movie Lovers.</p>
-        </footer>
+    <div class="game-wrapper">
+        <canvas id="gameCanvas" width="640" height="480"></canvas>
+        
+        <!-- Dialogue UI -->
+        <div id="dialogueBox" class="dialogue-box">
+            <div id="speakerName" class="speaker-name">NPC</div>
+            <div id="dialogueText" class="dialogue-text">...</div>
+            <div class="dialogue-prompt">Press <kbd>E</kbd> or <kbd>Space</kbd> to continue</div>
+        </div>
     </div>
 
+    <div class="controls-hint">
+        Use <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or Arrow Keys to move • Press <kbd>E</kbd> or <kbd>Space</kbd> near NPC to talk
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        const dialogueBox = document.getElementById('dialogueBox');
+        const speakerName = document.getElementById('speakerName');
+        const dialogueText = document.getElementById('dialogueText');
+
+        // Input state
+        const keys = {};
+
+        window.addEventListener('keydown', (e) => {
+            keys[e.key.toLowerCase()] = true;
+
+            // Handle interaction key
+            if (e.key.toLowerCase() === 'e' || e.key === ' ') {
+                handleInteraction();
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            keys[e.key.toLowerCase()] = false;
+        });
+
+        // Player configuration
+        const player = {
+            x: 100,
+            y: 200,
+            width: 28,
+            height: 28,
+            color: '#3b82f6',
+            speed: 3
+        };
+
+        // NPC configurations
+        const npcs = [
+            {
+                id: 'elder',
+                name: 'Elder Marcus',
+                x: 400,
+                y: 180,
+                width: 28,
+                height: 28,
+                color: '#eab308',
+                dialogues: [
+                    "Greetings, traveler! Welcome to our quiet village.",
+                    "Beware if you venture east; dark shadows lurk in the woods.",
+                    "Stay safe on your journey!"
+                ],
+                dialogueIndex: 0,
+                isTalking: false
+            },
+            {
+                id: 'merchant',
+                name: 'Merchant Lynne',
+                x: 220,
+                y: 340,
+                width: 28,
+                height: 28,
+                color: '#10b981',
+                dialogues: [
+                    "Looking to trade? I'm currently waiting for my shipment.",
+                    "Check back later once the roads clear up."
+                ],
+                dialogueIndex: 0,
+                isTalking: false
+            }
+        ];
+
+        let activeNPC = null;
+
+        // Interaction Handler
+        function handleInteraction() {
+            if (activeNPC) {
+                // Progress dialogue
+                activeNPC.dialogueIndex++;
+
+                if (activeNPC.dialogueIndex >= activeNPC.dialogues.length) {
+                    // End dialogue
+                    closeDialogue();
+                } else {
+                    // Show next line
+                    updateDialogueText();
+                }
+            } else {
+                // Check if player is near any NPC
+                for (let npc of npcs) {
+                    if (getDistance(player, npc) < 50) {
+                        startDialogue(npc);
+                        break;
+                    }
+                }
+            }
+        }
+
+        function startDialogue(npc) {
+            activeNPC = npc;
+            activeNPC.dialogueIndex = 0;
+            speakerName.textContent = npc.name;
+            updateDialogueText();
+            dialogueBox.classList.add('active');
+        }
+
+        function updateDialogueText() {
+            if (activeNPC) {
+                dialogueText.textContent = activeNPC.dialogues[activeNPC.dialogueIndex];
+            }
+        }
+
+        function closeDialogue() {
+            dialogueBox.classList.remove('active');
+            if (activeNPC) {
+                activeNPC.dialogueIndex = 0;
+                activeNPC = null;
+            }
+        }
+
+        // Distance calculation utility
+        function getDistance(obj1, obj2) {
+            const dx = (obj1.x + obj1.width / 2) - (obj2.x + obj2.width / 2);
+            const dy = (obj1.y + obj1.height / 2) - (obj2.y + obj2.height / 2);
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        // Collision check
+        function checkCollision(newX, newY, obj) {
+            return (
+                newX < obj.x + obj.width &&
+                newX + player.width > obj.x &&
+                newY < obj.y + obj.height &&
+                newY + player.height > obj.y
+            );
+        }
+
+        // Movement logic
+        function updatePlayer() {
+            if (activeNPC) return; // Lock movement during conversation
+
+            let moveX = 0;
+            let moveY = 0;
+
+            if (keys['w'] || keys['arrowup']) moveY -= player.speed;
+            if (keys['s'] || keys['arrowdown']) moveY += player.speed;
+            if (keys['a'] || keys['arrowleft']) moveX -= player.speed;
+            if (keys['d'] || keys['arrowright']) moveX += player.speed;
+
+            // Normalize diagonal speed
+            if (moveX !== 0 && moveY !== 0) {
+                moveX *= 0.7071;
+                moveY *= 0.7071;
+            }
+
+            let nextX = player.x + moveX;
+            let nextY = player.y + moveY;
+
+            // Boundary collisions
+            nextX = Math.max(0, Math.min(canvas.width - player.width, nextX));
+            nextY = Math.max(0, Math.min(canvas.height - player.height, nextY));
+
+            // NPC collisions
+            let collideX = false;
+            let collideY = false;
+
+            for (let npc of npcs) {
+                if (checkCollision(nextX, player.y, npc)) collideX = true;
+                if (checkCollision(player.x, nextY, npc)) collideY = true;
+            }
+
+            if (!collideX) player.x = nextX;
+            if (!collideY) player.y = nextY;
+        }
+
+        // Render loop
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw ground details
+            ctx.fillStyle = '#24491f';
+            ctx.fillRect(80, 80, 120, 90);
+            ctx.fillRect(450, 300, 140, 100);
+
+            // Draw NPCs
+            npcs.forEach(npc => {
+                ctx.fillStyle = npc.color;
+                ctx.fillRect(npc.x, npc.y, npc.width, npc.height);
+
+                // Draw interaction prompt indicator when near
+                const dist = getDistance(player, npc);
+                if (dist < 50 && !activeNPC) {
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = '12px sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('[E] Talk', npc.x + npc.width / 2, npc.y - 8);
+                }
+            });
+
+            // Draw Player
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        function gameLoop() {
+            updatePlayer();
+            draw();
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
 </body>
 </html>
