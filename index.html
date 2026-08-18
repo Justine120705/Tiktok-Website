@@ -3,12 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2D RPG - Village Encounter</title>
+    <title>2D Action RPG - Quest & Combat</title>
     <style>
         :root {
-            --bg-color: #0f1015;
-            --accent-color: #ff0050;
-            --dialog-bg: rgba(15, 16, 21, 0.92);
+            --bg-color: #0b0c10;
+            --panel-bg: rgba(20, 22, 30, 0.95);
+            --accent-red: #ff0050;
+            --accent-gold: #ffd700;
             --border-color: rgba(255, 255, 255, 0.15);
             --text-color: #f0f0f5;
         }
@@ -18,6 +19,7 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
         }
 
         body {
@@ -33,7 +35,7 @@
 
         .game-wrapper {
             position: relative;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
             border-radius: 12px;
             overflow: hidden;
             border: 1px solid var(--border-color);
@@ -41,56 +43,92 @@
 
         canvas {
             display: block;
-            background-color: #2d5a27;
+            background-color: #1e3a1e;
         }
 
-        /* Dialogue Overlay Box */
-        .dialogue-box {
+        /* Top HUD Bar */
+        .hud {
+            position: absolute;
+            top: 12px;
+            left: 12px;
+            right: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .stats-panel {
+            background: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            padding: 10px 16px;
+            border-radius: 8px;
+            display: flex;
+            gap: 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .bar-container {
+            width: 100px;
+            height: 10px;
+            background: #333;
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .hp-bar { height: 100%; background: #e63946; width: 100%; transition: width 0.2s; }
+        .exp-bar { height: 100%; background: #3a86ff; width: 0%; transition: width 0.2s; }
+
+        /* Dialogue & Shop Overlay Boxes */
+        .overlay-box {
             position: absolute;
             bottom: 16px;
             left: 50%;
             transform: translateX(-50%);
             width: 90%;
-            background: var(--dialog-bg);
+            max-width: 600px;
+            background: var(--panel-bg);
             border: 1px solid var(--border-color);
             backdrop-filter: blur(10px);
-            border-radius: 8px;
+            border-radius: 10px;
             padding: 16px;
             display: none;
             flex-direction: column;
-            gap: 6px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            z-index: 10;
         }
 
-        .dialogue-box.active {
+        .overlay-box.active { display: flex; }
+
+        .shop-items {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 8px;
+        }
+
+        .shop-item-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border-color);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
             display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
         }
 
-        .speaker-name {
-            font-weight: 700;
-            font-size: 0.9rem;
-            color: var(--accent-color);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .dialogue-text {
-            font-size: 1rem;
-            line-height: 1.4;
-            color: var(--text-color);
-        }
-
-        .dialogue-prompt {
-            align-self: flex-end;
-            font-size: 0.75rem;
-            color: #888;
-            margin-top: 4px;
-        }
+        .shop-item-btn:hover { background: rgba(255,0,80,0.2); border-color: var(--accent-red); }
 
         .controls-hint {
-            margin-top: 16px;
-            font-size: 0.85rem;
-            color: #7a7e8d;
+            margin-top: 12px;
+            font-size: 0.8rem;
+            color: #8a8f9e;
         }
 
         kbd {
@@ -99,230 +137,393 @@
             padding: 2px 6px;
             border-radius: 4px;
             color: #fff;
-            font-size: 0.8rem;
         }
     </style>
 </head>
 <body>
 
     <div class="game-wrapper">
-        <canvas id="gameCanvas" width="640" height="480"></canvas>
+        <canvas id="gameCanvas" width="700" height="500"></canvas>
         
+        <!-- HUD -->
+        <div class="hud">
+            <div class="stats-panel">
+                <div>
+                    <div>HP <span id="hpText">100/100</span></div>
+                    <div class="bar-container"><div id="hpBar" class="hp-bar"></div></div>
+                </div>
+                <div>
+                    <div>EXP (Lvl <span id="lvlText">1</span>)</div>
+                    <div class="bar-container"><div id="expBar" class="exp-bar"></div></div>
+                </div>
+                <div>
+                    <div>GOLD: <span id="goldText" style="color:var(--accent-gold)">0</span></div>
+                    <div>ATK: <span id="atkText">10</span> | DEF: <span id="defText">0</span></div>
+                </div>
+            </div>
+        </div>
+
         <!-- Dialogue UI -->
-        <div id="dialogueBox" class="dialogue-box">
-            <div id="speakerName" class="speaker-name">NPC</div>
-            <div id="dialogueText" class="dialogue-text">...</div>
-            <div class="dialogue-prompt">Press <kbd>E</kbd> or <kbd>Space</kbd> to continue</div>
+        <div id="dialogueBox" class="overlay-box">
+            <div id="speakerName" style="color:var(--accent-gold); font-weight:700;">NPC</div>
+            <div id="dialogueText">...</div>
+            <div style="font-size:0.75rem; color:#888; align-self:flex-end;">Press <kbd>E</kbd> to continue</div>
+        </div>
+
+        <!-- Shop UI -->
+        <div id="shopBox" class="overlay-box">
+            <div style="color:var(--accent-gold); font-weight:700;">merchant shop</div>
+            <div class="shop-items">
+                <button class="shop-item-btn" onclick="buyItem('potion')">
+                    <span>🧪 Health Potion (+30 HP)</span>
+                    <span style="color:var(--accent-gold)">20 Gold</span>
+                </button>
+                <button class="shop-item-btn" onclick="buyItem('iron_sword')">
+                    <span>⚔️ Iron Sword (+15 ATK)</span>
+                    <span style="color:var(--accent-gold)">100 Gold</span>
+                </button>
+                <button class="shop-item-btn" onclick="buyItem('iron_armor')">
+                    <span>🛡️ Iron Armor (+8 DEF)</span>
+                    <span style="color:var(--accent-gold)">100 Gold</span>
+                </button>
+            </div>
+            <div style="font-size:0.75rem; color:#888; align-self:flex-end; margin-top:8px;">Press <kbd>ESC</kbd> to close shop</div>
         </div>
     </div>
 
     <div class="controls-hint">
-        Use <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> or Arrow Keys to move • Press <kbd>E</kbd> or <kbd>Space</kbd> near NPC to talk
+        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> Move • <kbd>J</kbd> / <kbd>Space</kbd> Attack • <kbd>K</kbd> Whirlwind Skill (Unlocked at Lvl 2) • <kbd>E</kbd> Talk / Shop
     </div>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
+        // DOM elements
+        const hpText = document.getElementById('hpText');
+        const hpBar = document.getElementById('hpBar');
+        const expBar = document.getElementById('expBar');
+        const lvlText = document.getElementById('lvlText');
+        const goldText = document.getElementById('goldText');
+        const atkText = document.getElementById('atkText');
+        const defText = document.getElementById('defText');
         const dialogueBox = document.getElementById('dialogueBox');
         const speakerName = document.getElementById('speakerName');
         const dialogueText = document.getElementById('dialogueText');
+        const shopBox = document.getElementById('shopBox');
 
-        // Input state
         const keys = {};
 
         window.addEventListener('keydown', (e) => {
             keys[e.key.toLowerCase()] = true;
-
-            // Handle interaction key
-            if (e.key.toLowerCase() === 'e' || e.key === ' ') {
-                handleInteraction();
-            }
+            if (e.key.toLowerCase() === 'e') handleNPCInteraction();
+            if (e.key.toLowerCase() === 'j' || e.key === ' ') playerAttack();
+            if (e.key.toLowerCase() === 'k') useWhirlwindSkill();
+            if (e.key === 'Escape') closeShop();
         });
 
-        window.addEventListener('keyup', (e) => {
-            keys[e.key.toLowerCase()] = false;
-        });
+        window.addEventListener('keyup', (e) => { keys[e.key.toLowerCase()] = false; });
 
-        // Player configuration
+        // Game State
         const player = {
-            x: 100,
-            y: 200,
-            width: 28,
-            height: 28,
-            color: '#3b82f6',
-            speed: 3
+            x: 100, y: 220, width: 32, height: 32, speed: 3.5,
+            hp: 100, maxHp: 100, level: 1, exp: 0, maxExp: 50,
+            baseAtk: 10, bonusAtk: 0, baseDef: 0, bonusDef: 0,
+            gold: 50, facing: 'down', isAttacking: false, attackTimer: 0,
+            whirlwindUnlocked: false, whirlwindCooldown: 0
         };
 
-        // NPC configurations
-        const npcs = [
-            {
-                id: 'elder',
-                name: 'Elder Marcus',
-                x: 400,
-                y: 180,
-                width: 28,
-                height: 28,
-                color: '#eab308',
-                dialogues: [
-                    "Greetings, traveler! Welcome to our quiet village.",
-                    "Beware if you venture east; dark shadows lurk in the woods.",
-                    "Stay safe on your journey!"
-                ],
-                dialogueIndex: 0,
-                isTalking: false
-            },
-            {
-                id: 'merchant',
-                name: 'Merchant Lynne',
-                x: 220,
-                y: 340,
-                width: 28,
-                height: 28,
-                color: '#10b981',
-                dialogues: [
-                    "Looking to trade? I'm currently waiting for my shipment.",
-                    "Check back later once the roads clear up."
-                ],
-                dialogueIndex: 0,
-                isTalking: false
-            }
-        ];
+        const npc = {
+            name: "Merchant John", x: 320, y: 120, width: 32, height: 32,
+            dialogues: ["Welcome traveler! Fight monsters down south to earn gold.", "Open my shop to gear up before exploring deeper!"],
+            index: 0, inDialogue: false
+        };
 
-        let activeNPC = null;
+        let monsters = [];
+        let itemsOnGround = [];
+        let activeShop = false;
 
-        // Interaction Handler
-        function handleInteraction() {
-            if (activeNPC) {
-                // Progress dialogue
-                activeNPC.dialogueIndex++;
+        // Initialize Monsters
+        function spawnMonster() {
+            monsters.push({
+                x: 400 + Math.random() * 220,
+                y: 100 + Math.random() * 300,
+                width: 30, height: 30, hp: 40, maxHp: 40, atk: 8,
+                speed: 1.2, color: '#e63946'
+            });
+        }
 
-                if (activeNPC.dialogueIndex >= activeNPC.dialogues.length) {
-                    // End dialogue
-                    closeDialogue();
-                } else {
-                    // Show next line
-                    updateDialogueText();
+        for (let i = 0; i < 3; i++) spawnMonster();
+
+        // Player Actions
+        function playerAttack() {
+            if (player.isAttacking || activeShop || npc.inDialogue) return;
+            player.isAttacking = true;
+            player.attackTimer = 12;
+
+            // Attack Hitbox Calculation
+            let attackBox = { x: player.x, y: player.y, width: player.width, height: player.height };
+            if (player.facing === 'up') { attackBox.y -= 25; attackBox.height += 25; }
+            if (player.facing === 'down') { attackBox.height += 25; }
+            if (player.facing === 'left') { attackBox.x -= 25; attackBox.width += 25; }
+            if (player.facing === 'right') { attackBox.width += 25; }
+
+            // Check hit on monsters
+            monsters.forEach(m => {
+                if (checkRectCollision(attackBox, m)) {
+                    let totalAtk = player.baseAtk + player.bonusAtk;
+                    m.hp -= totalAtk;
                 }
-            } else {
-                // Check if player is near any NPC
-                for (let npc of npcs) {
-                    if (getDistance(player, npc) < 50) {
-                        startDialogue(npc);
-                        break;
+            });
+        }
+
+        function useWhirlwindSkill() {
+            if (!player.whirlwindUnlocked || player.whirlwindCooldown > 0 || activeShop) return;
+            player.whirlwindCooldown = 180; // 3 seconds cooldown
+            player.isAttacking = true;
+            player.attackTimer = 20;
+
+            let skillArea = {
+                x: player.x - 40, y: player.y - 40,
+                width: player.width + 80, height: player.height + 80
+            };
+
+            monsters.forEach(m => {
+                if (checkRectCollision(skillArea, m)) {
+                    m.hp -= (player.baseAtk + player.bonusAtk) * 2;
+                }
+            });
+        }
+
+        function handleNPCInteraction() {
+            let dist = getDistance(player, npc);
+            if (dist < 60) {
+                if (!npc.inDialogue && !activeShop) {
+                    npc.inDialogue = true;
+                    npc.index = 0;
+                    speakerName.textContent = npc.name;
+                    dialogueText.textContent = npc.dialogues[0];
+                    dialogueBox.classList.add('active');
+                } else if (npc.inDialogue) {
+                    npc.index++;
+                    if (npc.index < npc.dialogues.length) {
+                        dialogueText.textContent = npc.dialogues[npc.index];
+                    } else {
+                        dialogueBox.classList.remove('active');
+                        npc.inDialogue = false;
+                        openShop();
                     }
                 }
             }
         }
 
-        function startDialogue(npc) {
-            activeNPC = npc;
-            activeNPC.dialogueIndex = 0;
-            speakerName.textContent = npc.name;
-            updateDialogueText();
-            dialogueBox.classList.add('active');
+        function openShop() {
+            activeShop = true;
+            shopBox.classList.add('active');
         }
 
-        function updateDialogueText() {
-            if (activeNPC) {
-                dialogueText.textContent = activeNPC.dialogues[activeNPC.dialogueIndex];
+        function closeShop() {
+            activeShop = false;
+            shopBox.classList.remove('active');
+        }
+
+        function buyItem(itemType) {
+            if (itemType === 'potion' && player.gold >= 20) {
+                player.gold -= 20;
+                player.hp = Math.min(player.maxHp, player.hp + 30);
+            } else if (itemType === 'iron_sword' && player.gold >= 100) {
+                player.gold -= 100;
+                player.bonusAtk = 15;
+            } else if (itemType === 'iron_armor' && player.gold >= 100) {
+                player.gold -= 100;
+                player.bonusDef = 8;
             }
+            updateHUD();
         }
 
-        function closeDialogue() {
-            dialogueBox.classList.remove('active');
-            if (activeNPC) {
-                activeNPC.dialogueIndex = 0;
-                activeNPC = null;
-            }
-        }
+        // Logic & Updates
+        function update() {
+            if (player.whirlwindCooldown > 0) player.whirlwindCooldown--;
+            if (player.attackTimer > 0) player.attackTimer--;
+            else player.isAttacking = false;
 
-        // Distance calculation utility
-        function getDistance(obj1, obj2) {
-            const dx = (obj1.x + obj1.width / 2) - (obj2.x + obj2.width / 2);
-            const dy = (obj1.y + obj1.height / 2) - (obj2.y + obj2.height / 2);
-            return Math.sqrt(dx * dx + dy * dy);
-        }
+            if (!activeShop && !npc.inDialogue) {
+                // Movement
+                let moveX = 0, moveY = 0;
+                if (keys['w']) { moveY -= player.speed; player.facing = 'up'; }
+                if (keys['s']) { moveY += player.speed; player.facing = 'down'; }
+                if (keys['a']) { moveX -= player.speed; player.facing = 'left'; }
+                if (keys['d']) { moveX += player.speed; player.facing = 'right'; }
 
-        // Collision check
-        function checkCollision(newX, newY, obj) {
-            return (
-                newX < obj.x + obj.width &&
-                newX + player.width > obj.x &&
-                newY < obj.y + obj.height &&
-                newY + player.height > obj.y
-            );
-        }
-
-        // Movement logic
-        function updatePlayer() {
-            if (activeNPC) return; // Lock movement during conversation
-
-            let moveX = 0;
-            let moveY = 0;
-
-            if (keys['w'] || keys['arrowup']) moveY -= player.speed;
-            if (keys['s'] || keys['arrowdown']) moveY += player.speed;
-            if (keys['a'] || keys['arrowleft']) moveX -= player.speed;
-            if (keys['d'] || keys['arrowright']) moveX += player.speed;
-
-            // Normalize diagonal speed
-            if (moveX !== 0 && moveY !== 0) {
-                moveX *= 0.7071;
-                moveY *= 0.7071;
+                player.x = Math.max(0, Math.min(canvas.width - player.width, player.x + moveX));
+                player.y = Math.max(0, Math.min(canvas.height - player.height, player.y + moveY));
             }
 
-            let nextX = player.x + moveX;
-            let nextY = player.y + moveY;
+            // Monster Logic
+            monsters.forEach((m, index) => {
+                // Move towards player
+                let dist = getDistance(player, m);
+                if (dist < 200 && dist > 20) {
+                    let angle = Math.atan2((player.y - m.y), (player.x - m.x));
+                    m.x += Math.cos(angle) * m.speed;
+                    m.y += Math.sin(angle) * m.speed;
+                }
 
-            // Boundary collisions
-            nextX = Math.max(0, Math.min(canvas.width - player.width, nextX));
-            nextY = Math.max(0, Math.min(canvas.height - player.height, nextY));
+                // Monster attacks player
+                if (dist < 25 && Math.random() < 0.03) {
+                    let netAtk = Math.max(1, m.atk - (player.baseDef + player.bonusDef));
+                    player.hp -= netAtk;
+                    if (player.hp <= 0) {
+                        alert("You died! Respawning...");
+                        player.hp = player.maxHp;
+                        player.x = 100; player.y = 220;
+                    }
+                }
 
-            // NPC collisions
-            let collideX = false;
-            let collideY = false;
-
-            for (let npc of npcs) {
-                if (checkCollision(nextX, player.y, npc)) collideX = true;
-                if (checkCollision(player.x, nextY, npc)) collideY = true;
-            }
-
-            if (!collideX) player.x = nextX;
-            if (!collideY) player.y = nextY;
-        }
-
-        // Render loop
-        function draw() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw ground details
-            ctx.fillStyle = '#24491f';
-            ctx.fillRect(80, 80, 120, 90);
-            ctx.fillRect(450, 300, 140, 100);
-
-            // Draw NPCs
-            npcs.forEach(npc => {
-                ctx.fillStyle = npc.color;
-                ctx.fillRect(npc.x, npc.y, npc.width, npc.height);
-
-                // Draw interaction prompt indicator when near
-                const dist = getDistance(player, npc);
-                if (dist < 50 && !activeNPC) {
-                    ctx.fillStyle = '#ffffff';
-                    ctx.font = '12px sans-serif';
-                    ctx.textAlign = 'center';
-                    ctx.fillText('[E] Talk', npc.x + npc.width / 2, npc.y - 8);
+                // Monster Death
+                if (m.hp <= 0) {
+                    player.exp += 25;
+                    player.gold += 15;
+                    // Item drop chance
+                    if (Math.random() < 0.4) {
+                        itemsOnGround.push({ x: m.x, y: m.y, type: 'gold', value: 20 });
+                    }
+                    monsters.splice(index, 1);
+                    setTimeout(spawnMonster, 3000); // Respawn monster after 3 sec
+                    checkLevelUp();
                 }
             });
 
-            // Draw Player
-            ctx.fillStyle = player.color;
+            // Item Pickup
+            itemsOnGround.forEach((item, index) => {
+                if (getDistance(player, item) < 25) {
+                    player.gold += item.value;
+                    itemsOnGround.splice(index, 1);
+                }
+            });
+
+            updateHUD();
+        }
+
+        function checkLevelUp() {
+            if (player.exp >= player.maxExp) {
+                player.level++;
+                player.exp -= player.maxExp;
+                player.maxExp = Math.floor(player.maxExp * 1.5);
+                player.maxHp += 20;
+                player.hp = player.maxHp;
+                player.baseAtk += 5;
+                if (player.level >= 2 && !player.whirlwindUnlocked) {
+                    player.whirlwindUnlocked = true;
+                    alert("🎉 Level 2 Reached! Unlocked Skill: Whirlwind (Press 'K')");
+                }
+            }
+        }
+
+        function updateHUD() {
+            hpText.textContent = `${player.hp}/${player.maxHp}`;
+            hpBar.style.width = `${(player.hp / player.maxHp) * 100}%`;
+            expBar.style.width = `${(player.exp / player.maxExp) * 100}%`;
+            lvlText.textContent = player.level;
+            goldText.textContent = player.gold;
+            atkText.textContent = player.baseAtk + player.bonusAtk;
+            defText.textContent = player.baseDef + player.bonusDef;
+        }
+
+        // Rendering Functions
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Path & Village Area
+            ctx.fillStyle = '#2b4c2b';
+            ctx.fillRect(80, 80, 200, 150);
+
+            // Draw Items on ground
+            itemsOnGround.forEach(item => {
+                ctx.fillStyle = '#ffd700';
+                ctx.beginPath();
+                ctx.arc(item.x, item.y, 6, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Draw NPC (Merchant)
+            ctx.fillStyle = '#10b981';
+            ctx.fillRect(npc.x, npc.y, npc.width, npc.height);
+            ctx.fillStyle = '#fff';
+            ctx.font = '12px sans-serif';
+            ctx.fillText("Shop NPC [E]", npc.x - 10, npc.y - 8);
+
+            // Draw Monsters
+            monsters.forEach(m => {
+                // Body
+                ctx.fillStyle = m.color;
+                ctx.fillRect(m.x, m.y, m.width, m.height);
+                // Eyes
+                ctx.fillStyle = '#000';
+                ctx.fillRect(m.x + 6, m.y + 8, 4, 4);
+                ctx.fillRect(m.x + 18, m.y + 8, 4, 4);
+                // Health bar
+                ctx.fillStyle = '#333';
+                ctx.fillRect(m.x, m.y - 8, m.width, 4);
+                ctx.fillStyle = '#e63946';
+                ctx.fillRect(m.x, m.y - 8, (m.hp / m.maxHp) * m.width, 4);
+            });
+
+            // Draw Player Character with detailed features
+            drawPlayerCharacter();
+
+            // Render Attack Effects
+            if (player.isAttacking) {
+                ctx.strokeStyle = '#00f2fe';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                if (player.facing === 'down') ctx.arc(player.x + 16, player.y + 32, 24, 0, Math.PI);
+                if (player.facing === 'up') ctx.arc(player.x + 16, player.y, 24, Math.PI, 0);
+                if (player.facing === 'left') ctx.arc(player.x, player.y + 16, 24, 0.5 * Math.PI, 1.5 * Math.PI);
+                if (player.facing === 'right') ctx.arc(player.x + 32, player.y + 16, 24, 1.5 * Math.PI, 0.5 * Math.PI);
+                ctx.stroke();
+            }
+        }
+
+        function drawPlayerCharacter() {
+            // Body / Armor
+            ctx.fillStyle = player.bonusDef > 0 ? '#94a3b8' : '#3b82f6';
             ctx.fillRect(player.x, player.y, player.width, player.height);
+
+            // Head / Skin
+            ctx.fillStyle = '#fbcfe8';
+            ctx.fillRect(player.x + 6, player.y + 4, 20, 16);
+
+            // Eyes based on direction
+            ctx.fillStyle = '#1e1b4b';
+            if (player.facing === 'down') {
+                ctx.fillRect(player.x + 10, player.y + 10, 3, 4);
+                ctx.fillRect(player.x + 19, player.y + 10, 3, 4);
+            } else if (player.facing === 'right') {
+                ctx.fillRect(player.x + 20, player.y + 10, 3, 4);
+            } else if (player.facing === 'left') {
+                ctx.fillRect(player.x + 9, player.y + 10, 3, 4);
+            }
+
+            // Weapon
+            ctx.fillStyle = player.bonusAtk > 0 ? '#ffd700' : '#cbd5e1';
+            if (player.facing === 'right') ctx.fillRect(player.x + 28, player.y + 16, 12, 4);
+            if (player.facing === 'left') ctx.fillRect(player.x - 8, player.y + 16, 12, 4);
+            if (player.facing === 'down') ctx.fillRect(player.x + 14, player.y + 28, 4, 12);
+            if (player.facing === 'up') ctx.fillRect(player.x + 14, player.y - 8, 4, 12);
+        }
+
+        // Helpers
+        function getDistance(a, b) {
+            return Math.hypot((a.x + a.width / 2) - (b.x + b.width / 2), (a.y + a.height / 2) - (b.y + b.height / 2));
+        }
+
+        function checkRectCollision(r1, r2) {
+            return !(r1.x > r2.x + r2.width || r1.x + r1.width < r2.x || r1.y > r2.y + r2.height || r1.y + r1.height < r2.y);
         }
 
         function gameLoop() {
-            updatePlayer();
+            update();
             draw();
             requestAnimationFrame(gameLoop);
         }
