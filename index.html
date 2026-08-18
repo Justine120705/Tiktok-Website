@@ -3,34 +3,37 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nyxor ♡ Film & Movie Edits</title>
+    <title>Nyxor ♡ Hello Kitty Film Edits</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Nunito:wght@400;600;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Quicksand:wght@500;700&display=swap" rel="stylesheet">
     
     <style>
         :root {
-            --bg-color: #fff0f5;
-            --card-bg: rgba(255, 255, 255, 0.85);
-            --pink-main: #ff85a2;
-            --pink-soft: #ffb6c1;
-            --purple-accent: #b39ddb;
-            --yellow-accent: #ffe066;
-            --text-dark: #5c4b51;
-            --text-muted: #8e7dbe;
-            --shadow-cute: 0 12px 28px rgba(255, 133, 162, 0.25);
+            --hk-red: #ff2e63;
+            --hk-pink-bg: #ffe4e9;
+            --hk-card-bg: #fffbfd;
+            --hk-yellow: #ffcc00;
+            --hk-soft-pink: #ffb3c6;
+            --text-dark: #4a3e43;
+            --shadow-kitty: 0 10px 25px rgba(255, 46, 99, 0.2);
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: 'Nunito', sans-serif;
+            font-family: 'Quicksand', sans-serif;
         }
 
         body {
-            background-color: var(--bg-color);
+            background-color: var(--hk-pink-bg);
+            /* Hello Kitty Polka Dot Pattern */
+            background-image: radial-gradient(rgba(255, 46, 99, 0.15) 15%, transparent 16%),
+                              radial-gradient(rgba(255, 46, 99, 0.15) 15%, transparent 16%);
+            background-size: 30px 30px;
+            background-position: 0 0, 15px 15px;
             color: var(--text-dark);
             min-height: 100vh;
             display: flex;
@@ -40,7 +43,7 @@
             position: relative;
         }
 
-        /* Floating Sparkles Background Canvas */
+        /* Floating Bows Background Canvas */
         #bg-canvas {
             position: fixed;
             top: 0;
@@ -57,31 +60,64 @@
             padding: 40px 20px;
         }
 
-        /* Kawaii Profile Card */
+        /* Hello Kitty Style Card */
         .profile-card {
-            background: var(--card-bg);
-            border: 3px solid #ffffff;
-            backdrop-filter: blur(12px);
+            background: var(--hk-card-bg);
+            border: 4px solid #ffffff;
             border-radius: 35px;
-            padding: 40px 25px;
+            padding: 45px 25px 35px;
             text-align: center;
-            box-shadow: var(--shadow-cute);
+            box-shadow: var(--shadow-kitty);
             margin-bottom: 40px;
             position: relative;
-            overflow: hidden;
             transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
         }
 
         .profile-card:hover {
-            transform: translateY(-5px);
+            transform: translateY(-4px);
         }
 
-        /* Avatar Container with Cute Heart Floating Badge */
+        /* Hello Kitty Ears & Red Bow Header Element */
+        .kitty-ears-container {
+            position: absolute;
+            top: -28px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 180px;
+            height: 40px;
+            pointer-events: none;
+        }
+
+        .kitty-ear {
+            position: absolute;
+            width: 0;
+            height: 0;
+            border-left: 22px solid transparent;
+            border-right: 22px solid transparent;
+            border-bottom: 30px solid #ffffff;
+        }
+        .kitty-ear.left { left: 10px; transform: rotate(-15deg); }
+        .kitty-ear.right { right: 10px; transform: rotate(15deg); }
+
+        .kitty-bow {
+            position: absolute;
+            top: 5px;
+            right: 15px;
+            font-size: 2rem;
+            animation: bowWiggle 3s infinite ease-in-out;
+        }
+
+        @keyframes bowWiggle {
+            0%, 100% { transform: rotate(0deg); }
+            50% { transform: rotate(10deg); }
+        }
+
+        /* Avatar Container */
         .avatar-container {
             position: relative;
             width: 140px;
             height: 140px;
-            margin: 0 auto 20px;
+            margin: 0 auto 18px;
         }
 
         .avatar-container img {
@@ -89,57 +125,51 @@
             height: 100%;
             border-radius: 50%;
             object-fit: cover;
-            border: 5px solid var(--pink-main);
-            box-shadow: 0 8px 20px rgba(255, 133, 162, 0.3);
+            border: 5px solid var(--hk-red);
+            box-shadow: 0 8px 20px rgba(255, 46, 99, 0.3);
         }
 
         .avatar-badge {
             position: absolute;
-            bottom: 0;
-            right: 0;
-            background: var(--yellow-accent);
-            border: 3px solid #fff;
-            width: 38px;
-            height: 38px;
+            bottom: -2px;
+            right: -2px;
+            background: #ffffff;
+            border: 2px solid var(--hk-red);
+            width: 40px;
+            height: 40px;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
+            font-size: 1.2rem;
             box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            animation: bounce 2s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-6px); }
         }
 
         .handle-tag {
             display: inline-block;
-            background: rgba(255, 133, 162, 0.15);
-            padding: 6px 18px;
+            background: #fff0f3;
+            border: 2px solid var(--hk-soft-pink);
+            padding: 5px 18px;
             border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 800;
-            color: var(--pink-main);
+            font-size: 0.88rem;
+            font-weight: 700;
+            color: var(--hk-red);
             margin-bottom: 10px;
-            letter-spacing: 0.5px;
         }
 
         h1 {
             font-family: 'Fredoka', sans-serif;
             font-size: 3rem;
             font-weight: 700;
-            color: var(--pink-main);
+            color: var(--hk-red);
             letter-spacing: 1px;
             margin-bottom: 4px;
             text-shadow: 2px 2px 0px #ffffff;
         }
 
         .bio {
-            color: var(--text-muted);
-            font-weight: 800;
+            color: var(--text-dark);
+            font-weight: 700;
             font-size: 1.1rem;
             margin-bottom: 16px;
         }
@@ -148,18 +178,18 @@
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: #ffffff;
-            color: var(--pink-main);
-            border: 2px dashed var(--pink-soft);
+            background: var(--hk-yellow);
+            color: #4a3e43;
+            border: 2px solid #ffffff;
             padding: 6px 18px;
             border-radius: 25px;
-            font-weight: 800;
+            font-weight: 700;
             font-size: 0.85rem;
             margin-bottom: 25px;
-            box-shadow: 0 4px 12px rgba(255, 182, 193, 0.3);
+            box-shadow: 0 4px 12px rgba(255, 204, 0, 0.4);
         }
 
-        /* Stats Bubble Grid */
+        /* Hello Kitty Stat Bubbles */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -170,40 +200,39 @@
 
         .stat-item {
             background: #ffffff;
-            border: 2px solid #ffe4e9;
+            border: 3px solid #ffe4e9;
             padding: 16px 10px;
             border-radius: 24px;
-            box-shadow: 0 6px 15px rgba(255, 182, 193, 0.2);
+            box-shadow: 0 6px 15px rgba(255, 46, 99, 0.12);
             transition: all 0.3s ease;
         }
 
         .stat-item:hover {
-            transform: scale(1.05) rotate(-2deg);
-            border-color: var(--pink-main);
+            transform: scale(1.05);
+            border-color: var(--hk-red);
         }
 
         .stat-value {
             font-family: 'Fredoka', sans-serif;
             font-size: 1.8rem;
             font-weight: 700;
-            color: var(--pink-main);
+            color: var(--hk-red);
         }
 
         .stat-label {
             font-size: 0.75rem;
-            color: var(--text-muted);
+            color: var(--text-dark);
             text-transform: uppercase;
-            font-weight: 800;
-            letter-spacing: 0.5px;
+            font-weight: 700;
             margin-top: 2px;
         }
 
-        /* Cute Pill CTA Button */
+        /* Hello Kitty Signature Button */
         .cta-btn {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            background: linear-gradient(45deg, var(--pink-main), var(--purple-accent));
+            background: var(--hk-red);
             color: #ffffff;
             padding: 16px 38px;
             border-radius: 50px;
@@ -212,27 +241,28 @@
             font-size: 1.1rem;
             text-decoration: none;
             transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            box-shadow: 0 10px 25px rgba(255, 133, 162, 0.4);
+            box-shadow: 0 10px 25px rgba(255, 46, 99, 0.4);
             border: 3px solid #ffffff;
         }
 
         .cta-btn:hover {
             transform: scale(1.08) rotate(1deg);
-            box-shadow: 0 15px 30px rgba(255, 133, 162, 0.6);
+            background: #ff003b;
+            box-shadow: 0 15px 30px rgba(255, 46, 99, 0.6);
         }
 
         /* Section Header */
         .section-title {
             font-family: 'Fredoka', sans-serif;
             font-size: 1.6rem;
-            color: var(--pink-main);
+            color: var(--hk-red);
             margin-bottom: 20px;
             display: flex;
             align-items: center;
             gap: 10px;
         }
 
-        /* Video Edit Cards */
+        /* Video Showcase Cards */
         .showcase-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
@@ -241,7 +271,7 @@
         }
 
         .video-card {
-            background: var(--card-bg);
+            background: var(--hk-card-bg);
             border: 4px solid #ffffff;
             border-radius: 28px;
             overflow: hidden;
@@ -253,19 +283,19 @@
             padding: 18px;
             text-decoration: none;
             color: white;
-            box-shadow: var(--shadow-cute);
+            box-shadow: var(--shadow-kitty);
         }
 
         .video-card:hover {
             transform: translateY(-8px) scale(1.02);
-            border-color: var(--pink-soft);
-            box-shadow: 0 18px 35px rgba(255, 133, 162, 0.4);
+            border-color: var(--hk-red);
+            box-shadow: 0 18px 35px rgba(255, 46, 99, 0.35);
         }
 
         .video-overlay {
             position: absolute;
             inset: 0;
-            background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(92, 75, 81, 0.85) 100%);
+            background: linear-gradient(180deg, rgba(0,0,0,0) 40%, rgba(74, 62, 67, 0.85) 100%);
             z-index: 1;
         }
 
@@ -276,8 +306,8 @@
 
         .card-tag {
             font-size: 0.75rem;
-            font-weight: 800;
-            background: var(--pink-main);
+            font-weight: 700;
+            background: var(--hk-red);
             color: #ffffff;
             padding: 4px 12px;
             border-radius: 12px;
@@ -294,25 +324,25 @@
 
         footer {
             text-align: center;
-            color: var(--text-muted);
+            color: var(--text-dark);
             font-size: 0.9rem;
             font-weight: 700;
             padding: 24px 0;
             width: 100%;
         }
 
-        /* Sound Helper */
+        /* Sound Indicator */
         .sound-indicator {
             position: fixed;
             bottom: 15px;
             right: 15px;
             background: #ffffff;
-            border: 2px solid var(--pink-soft);
+            border: 2px solid var(--hk-red);
             padding: 6px 14px;
             border-radius: 20px;
             font-size: 0.75rem;
-            font-weight: 800;
-            color: var(--pink-main);
+            font-weight: 700;
+            color: var(--hk-red);
             box-shadow: 0 4px 12px rgba(0,0,0,0.08);
             pointer-events: none;
             z-index: 100;
@@ -321,24 +351,31 @@
 </head>
 <body>
 
-    <!-- Floating Background Canvas -->
+    <!-- Floating Bows Background Canvas -->
     <canvas id="bg-canvas"></canvas>
 
-    <div class="sound-indicator">🌸 Pop Sounds Active</div>
+    <div class="sound-indicator">🎀 Kitty Sounds Active</div>
 
     <div class="container">
-        <!-- Cute Profile Header -->
+        <!-- Hello Kitty Profile Card Header -->
         <header class="profile-card">
+            <!-- Decorative Hello Kitty Ears & Red Bow -->
+            <div class="kitty-ears-container">
+                <div class="kitty-ear left"></div>
+                <div class="kitty-ear right"></div>
+                <div class="kitty-bow">🎀</div>
+            </div>
+
             <div class="avatar-container">
                 <img src="Screenshot 2026-08-18 200231.png" alt="Nyxor Profile Avatar">
-                <div class="avatar-badge">💖</div>
+                <div class="avatar-badge">🍎</div>
             </div>
             <span class="handle-tag">@nyxor107</span>
-            <h1>Nyxor ✨</h1>
-            <p class="bio">🎬 Film & Movie Edits 🍿</p>
+            <h1>Nyxor 🎀</h1>
+            <p class="bio">🎬 Hello Kitty's Movie Edits Studio 🍿</p>
             
             <div class="goal-badge">
-                <span>🎯 Goal: 100 Followers</span>
+                <span>🎯 Target: 100 Followers</span>
             </div>
 
             <!-- Profile Stats -->
@@ -365,7 +402,7 @@
 
         <!-- Movie Edits Gallery -->
         <main>
-            <h2 class="section-title">🎀 Latest Movie Edits</h2>
+            <h2 class="section-title">🎀 Featured Transmissions</h2>
             <div class="showcase-grid">
                 <a href="https://www.tiktok.com/@nyxor107" target="_blank" class="video-card" style="background: url('https://images.unsplash.com/photo-1509198397868-475647b2a1e5?q=80&w=600&auto=format&fit=crop') center/cover;">
                     <div class="video-overlay"></div>
@@ -394,34 +431,34 @@
         </main>
 
         <footer>
-            <p>Made with 💕 for Nyxor (@nyxor107)</p>
+            <p>Made with 🎀 for Nyxor (@nyxor107)</p>
         </footer>
     </div>
 
     <script>
-        // Web Audio API Synthesizer for Cute "Pop" Sounds
+        // Web Audio API Synthesizer for Hello Kitty Chirp Sounds
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         
-        function playPopSound() {
+        function playKittyChirp() {
             if (audioCtx.state === 'suspended') audioCtx.resume();
             const osc = audioCtx.createOscillator();
             const gain = audioCtx.createGain();
             osc.type = 'sine';
-            osc.frequency.setValueAtTime(600, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(1200, audioCtx.currentTime + 0.05);
+            osc.frequency.setValueAtTime(800, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(1400, audioCtx.currentTime + 0.06);
             gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.06);
             osc.connect(gain);
             gain.connect(audioCtx.destination);
             osc.start();
-            osc.stop(audioCtx.currentTime + 0.05);
+            osc.stop(audioCtx.currentTime + 0.06);
         }
 
         document.querySelectorAll('a, .stat-item').forEach(el => {
-            el.addEventListener('mouseenter', playPopSound);
+            el.addEventListener('mouseenter', playKittyChirp);
         });
 
-        // Floating Hearts & Sparkles Canvas
+        // Floating Bows Canvas Animation
         const canvas = document.getElementById('bg-canvas');
         const ctx = canvas.getContext('2d');
         let elements = [];
@@ -433,18 +470,18 @@
         window.addEventListener('resize', resizeCanvas);
         resizeCanvas();
 
-        class FloatingElement {
+        class FloatingBow {
             constructor() {
                 this.reset();
             }
             reset() {
                 this.x = Math.random() * canvas.width;
                 this.y = canvas.height + 20;
-                this.size = Math.random() * 12 + 8;
-                this.speedY = Math.random() * 1 + 0.5;
+                this.size = Math.random() * 12 + 10;
+                this.speedY = Math.random() * 1 + 0.6;
                 this.speedX = Math.sin(Math.random()) * 0.5;
                 this.opacity = Math.random() * 0.5 + 0.3;
-                this.type = Math.random() > 0.4 ? 'heart' : 'sparkle';
+                this.symbol = Math.random() > 0.3 ? '🎀' : '🍎';
             }
             update() {
                 this.y -= this.speedY;
@@ -453,21 +490,14 @@
             }
             draw() {
                 ctx.globalAlpha = this.opacity;
-                if (this.type === 'heart') {
-                    ctx.fillStyle = '#ff85a2';
-                    ctx.font = `${this.size}px sans-serif`;
-                    ctx.fillText('🌸', this.x, this.y);
-                } else {
-                    ctx.fillStyle = '#ffe066';
-                    ctx.font = `${this.size}px sans-serif`;
-                    ctx.fillText('✨', this.x, this.y);
-                }
+                ctx.font = `${this.size}px sans-serif`;
+                ctx.fillText(this.symbol, this.x, this.y);
                 ctx.globalAlpha = 1;
             }
         }
 
-        for (let i = 0; i < 35; i++) {
-            elements.push(new FloatingElement());
+        for (let i = 0; i < 30; i++) {
+            elements.push(new FloatingBow());
         }
 
         function animate() {
